@@ -1,5 +1,21 @@
 const $ = (s) => document.querySelector(s);
 
+let map;
+let marker;
+
+function initMap() {
+  if (map) return;
+
+  map = L.map("map").setView([44.4323, 26.1063], 11);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: "&copy; OpenStreetMap contributors",
+  }).addTo(map);
+
+  marker = L.marker([44.4323, 26.1063]).addTo(map);
+}
+
 function weatherCodeText(code) {
   const c = Number(code);
   if (c === 0) return "Senin";
@@ -44,7 +60,7 @@ async function forecast(lat, lon) {
 function fillPick(results) {
   const pick = $("#pick");
   pick.innerHTML = "";
-  
+
   results.forEach((r, i) => {
     const opt = document.createElement("option");
     opt.value = i;
@@ -65,6 +81,19 @@ function render(place, data) {
   $("#now").textContent =
     `${cur.temperature_2m}${data.current_units.temperature_2m} • ` +
     `${weatherCodeText(cur.weather_code)}`;
+
+  initMap();
+  map.setView([place.latitude, place.longitude], 11);
+  marker.setLatLng([place.latitude, place.longitude]);
+
+  marker
+    .bindPopup(
+      `<b>${place.name}, ${place.country}</b><br>` +
+      `${cur.temperature_2m}${data.current_units.temperature_2m} • ${weatherCodeText(cur.weather_code)}`
+    )
+    .openPopup();
+
+  setTimeout(() => map.invalidateSize(), 0);
 
   $("#hourRows").innerHTML = "";
   for (let i = 0; i < 12; i++) {
@@ -97,6 +126,12 @@ async function onSearch() {
 
   try {
     lastResults = await geocode($("#q").value);
+    if (!lastResults.length) {
+      $("#status").textContent = "";
+      $("#err").textContent = "Nu am găsit rezultate.";
+      $("#pickWrap").style.display = "none";
+      return;
+    }
     fillPick(lastResults);
     $("#status").textContent = "Alege locația.";
   } catch (e) {
@@ -105,7 +140,7 @@ async function onSearch() {
 }
 
 async function onLoadForecast() {
-  const place = lastResults[$("#pick").value];
+  const place = lastResults[Number($("#pick").value)];
   const data = await forecast(place.latitude, place.longitude);
   render(place, data);
 }

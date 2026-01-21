@@ -1,77 +1,87 @@
-<!DOCTYPE html>
-
+<!doctype html>
 <html lang="ro">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title> Vremea (Open-Meteo)</title>
-    <link rel="stylesheet" href="style.css" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Vremea (Open-Meteo)</title>
+
+  <link rel="stylesheet" href="styles.css" />
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
 </head>
 <body>
-    <div class="wrap">
-        <h1> Vremea pe oras (Geocoding -> Forecast)</h1>
+  <div class="wrap">
+    <h1>Vremea pe oraș (Geocoding → Forecast)</h1>
 
-        <div class="card">
-            <div class="row">
-                <input id="q" placeholder="Scrie un oras (ex: Bucuresti)" value = "Bucuresti" />
-                <button id="searchBtn">Cauta</button>
-                <span class="muted">Tip: scrie minim 3 litere pentru rezultate mai bune.</span>
-            </div>
+    <div class="card">
+      <div class="row">
+        <input id="q" placeholder="Scrie un oraș (ex: București)" value="București" />
+        <button id="searchBtn">Caută</button>
+        <span class="muted">Tip: scrie minim 3 litere pentru rezultate mai bune.</span>
+      </div>
 
-            <p id="status" class="muted"></p>
-            <p id="err" class="error"></p>
+      <p id="status" class="muted"></p>
+      <p id="err" class="error"></p>
 
-            <div id="pickWrap" style="display: none; margin-top: 10px">
-                <div class="row">
-                    <label for="pick" class="muted">Alege locatia:</label>
-                    <select id="pick"></select>
-                    <button id="loadBtn">Afiseaza vremea</button>
-                </div>
-            </div>
+      <div id="pickWrap" style="display:none; margin-top: 10px;">
+        <div class="row">
+          <label for="pick" class="muted">Alege locația:</label>
+          <select id="pick"></select>
+          <button id="loadBtn">Afișează vremea</button>
         </div>
-
-        <div id="out" class="card" style="display: none;">
-            <div class="row" style="justify-content: space-between;">
-                <div>
-                    <h2 id="place"></h2>
-                    <div id="meta" class="muted"></div>
-                </div>
-                <div class="pill" id="now"></div>
-            </div>
-
-            <div class="grid2">
-                <div>
-                    <h3> Urmatoarele 12 ore</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Ora</th>
-                                <th>Temp</th>
-                                <th>Vant</th>
-                                <th>Cod</th>
-                            </tr>
-                        </thead>
-                        <tbody id="hourRows"></tbody>
-                    </table>
-                </div>
-
-                <div>
-                    <h3>Urmatoarele 7 zile</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Zi</th>
-                                <th>Min / Max</th>
-                                <th>Cod</th>
-                            </tr>
-                        </thead>
-                        <tbody id="dayRows"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
 
-    <script src="script.js"></script>
+    <div id="out" class="card" style="display:none;">
+      <div class="row" style="justify-content: space-between;">
+        <div>
+          <h2 id="place"></h2>
+          <div id="meta" class="muted"></div>
+        </div>
+        <div class="pill" id="now"></div>
+      </div>
+
+      <div id="map" class="map"></div>
+
+      <div class="grid2">
+        <div>
+          <h3>Următoarele 12 ore</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Ora</th>
+                <th>Temp</th>
+                <th>Vânt</th>
+                <th>Cod</th>
+              </tr>
+            </thead>
+            <tbody id="hourRows"></tbody>
+          </table>
+        </div>
+
+        <div>
+          <h3>Următoarele 7 zile</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Zi</th>
+                <th>Min / Max</th>
+                <th>Cod</th>
+              </tr>
+            </thead>
+            <tbody id="dayRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script src="script.js"></script>
 </body>
 </html>
