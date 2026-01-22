@@ -1,62 +1,12 @@
+import { initTheme } from "./theme.js";
+import { geocode, forecast, weatherCodeText } from "./api.js";
+import { updateMap } from "./map.js";
+
 const $ = (s) => document.querySelector(s);
 
-let map;
-let marker;
+let lastResults = [];
 
-function initMap() {
-  if (map) return;
-
-  map = L.map("map").setView([44.4323, 26.1063], 11);
-
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution: "&copy; OpenStreetMap contributors",
-  }).addTo(map);
-
-  marker = L.marker([44.4323, 26.1063]).addTo(map);
-}
-
-function weatherCodeText(code) {
-  const c = Number(code);
-  if (c === 0) return "Senin";
-  if ([1, 2, 3].includes(c)) return "Parțial noros";
-  if ([45, 48].includes(c)) return "Ceață";
-  if ([51, 53, 55].includes(c)) return "Burniță";
-  if ([61, 63, 65].includes(c)) return "Ploaie";
-  if ([71, 73, 75].includes(c)) return "Ninsoare";
-  if ([80, 81, 82].includes(c)) return "Averse";
-  if ([95, 96, 99].includes(c)) return "Furtună";
-  return "Cod: " + c;
-}
-
-async function geocode(name) {
-  const url = new URL("https://geocoding-api.open-meteo.com/v1/search");
-  url.searchParams.set("name", name);
-  url.searchParams.set("count", "5");
-  url.searchParams.set("language", "ro");
-  url.searchParams.set("format", "json");
-
-  const res = await fetch(url);
-  if (!res.ok) throw new Error("Geocoding failed");
-  const data = await res.json();
-  return data.results || [];
-}
-
-async function forecast(lat, lon) {
-  const url = new URL("https://api.open-meteo.com/v1/forecast");
-  url.searchParams.set("latitude", lat);
-  url.searchParams.set("longitude", lon);
-  url.searchParams.set("current", "temperature_2m,wind_speed_10m,weather_code");
-  url.searchParams.set("hourly", "temperature_2m,wind_speed_10m,weather_code");
-  url.searchParams.set("daily", "temperature_2m_min,temperature_2m_max,weather_code");
-  url.searchParams.set("forecast_days", "7");
-  url.searchParams.set("timezone", "auto");
-
-  const res = await fetch(url);
-  if (!res.ok) throw new Error("Forecast failed");
-  return res.json();
-}
-
+/* Umplu dropdown-ul cu rezultatele gasite */
 function fillPick(results) {
   const pick = $("#pick");
   pick.innerHTML = "";
@@ -71,6 +21,7 @@ function fillPick(results) {
   $("#pickWrap").style.display = results.length ? "block" : "none";
 }
 
+/* Afisez tot UI-ul dupa ce am datele */
 function render(place, data) {
   $("#out").style.display = "block";
 
@@ -82,19 +33,16 @@ function render(place, data) {
     `${cur.temperature_2m}${data.current_units.temperature_2m} • ` +
     `${weatherCodeText(cur.weather_code)}`;
 
-  initMap();
-  map.setView([place.latitude, place.longitude], 11);
-  marker.setLatLng([place.latitude, place.longitude]);
-
-  marker
-    .bindPopup(
+  /* update harta */ 
+  updateMap({
+    lat: place.latitude,
+    lon: place.longitude,
+    popupHtml:
       `<b>${place.name}, ${place.country}</b><br>` +
-      `${cur.temperature_2m}${data.current_units.temperature_2m} • ${weatherCodeText(cur.weather_code)}`
-    )
-    .openPopup();
+      `${cur.temperature_2m}${data.current_units.temperature_2m} • ${weatherCodeText(cur.weather_code)}`,
+  });
 
-  setTimeout(() => map.invalidateSize(), 0);
-
+  /* tabel ore */
   $("#hourRows").innerHTML = "";
   for (let i = 0; i < 12; i++) {
     $("#hourRows").innerHTML += `
@@ -106,6 +54,7 @@ function render(place, data) {
       </tr>`;
   }
 
+  /* tabel zile */
   $("#dayRows").innerHTML = "";
   for (let i = 0; i < data.daily.time.length; i++) {
     $("#dayRows").innerHTML += `
@@ -117,21 +66,23 @@ function render(place, data) {
   }
 }
 
-let lastResults = [];
-
+/* Caut orasul din input */
 async function onSearch() {
   $("#status").textContent = "Caut orașe…";
   $("#err").textContent = "";
   $("#out").style.display = "none";
 
   try {
-    lastResults = await geocode($("#q").value);
+    const query = $("#q").value.trim();
+    lastResults = await geocode(query);
+
     if (!lastResults.length) {
       $("#status").textContent = "";
       $("#err").textContent = "Nu am găsit rezultate.";
       $("#pickWrap").style.display = "none";
       return;
     }
+
     fillPick(lastResults);
     $("#status").textContent = "Alege locația.";
   } catch (e) {
@@ -139,11 +90,15 @@ async function onSearch() {
   }
 }
 
+/* Incarc prognoza pentru orasul selectat */
 async function onLoadForecast() {
   const place = lastResults[Number($("#pick").value)];
   const data = await forecast(place.latitude, place.longitude);
   render(place, data);
 }
+
+/* init */
+initTheme();
 
 $("#searchBtn").addEventListener("click", onSearch);
 $("#loadBtn").addEventListener("click", onLoadForecast);
@@ -151,4 +106,5 @@ $("#q").addEventListener("keydown", (e) => {
   if (e.key === "Enter") onSearch();
 });
 
+/* Auto-run la inceput (Bucuresti e pus by default in input) */
 onSearch();

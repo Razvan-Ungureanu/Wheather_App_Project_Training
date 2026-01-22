@@ -3,24 +3,23 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
   <title>Vremea (Open-Meteo)</title>
 
   <link rel="stylesheet" href="styles.css" />
-
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
+
 <body>
   <div class="wrap">
-    <h1>Vremea pe oraș (Geocoding → Forecast)</h1>
+    <div class="topbar">
+      <h1>Vremea pe oraș (Geocoding → Forecast)</h1>
+      <button id="themeBtn" type="button" aria-label="Schimbă tema">🌓</button>
+    </div>
 
     <div class="card">
       <div class="row">
         <input id="q" placeholder="Scrie un oraș (ex: București)" value="București" />
-        <button id="searchBtn">Caută</button>
+        <button id="searchBtn" type="button">Caută</button>
         <span class="muted">Tip: scrie minim 3 litere pentru rezultate mai bune.</span>
       </div>
 
@@ -31,7 +30,7 @@
         <div class="row">
           <label for="pick" class="muted">Alege locația:</label>
           <select id="pick"></select>
-          <button id="loadBtn">Afișează vremea</button>
+          <button id="loadBtn" type="button">Afișează vremea</button>
         </div>
       </div>
     </div>
@@ -78,10 +77,10 @@
         </div>
       </div>
     </div>
+
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-  <script src="script.js"></script>
+  <script type="module" src="./main.js"></script>
 </body>
 </html>
